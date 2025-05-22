@@ -1,0 +1,4 @@
+train: ../train/images
+val: ../val/images
+nc: 4  # number of classes
+names: ['img', 'price_before', 'price_after', 'descrip']
