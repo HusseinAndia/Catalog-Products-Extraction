@@ -1,0 +1,10 @@
+Model:
+  pretrained: "yolo11m.pt"
+
+Arguments:
+  data: "dataset/product/data.yaml" #path for the yaml file for our dataset
+  num_batchs: 4
+  epochs: 100
+  imgsz: [640, 640]
+  device: 0 
+
