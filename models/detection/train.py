@@ -3,7 +3,7 @@ import torch
 from ultralytics import YOLO
 
 
-with open('/configs/train.yaml', 'r') as file:
+with open('/configs/detec_model.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
 
@@ -19,7 +19,7 @@ model.train(
     device=cfg['Arguments']['device'] # 0 for GPU, 'cpu' for CPU
 )
 
-
+# Getting results of the validations
 metrics = model.val()  # Validate on validation set
 print(metrics.box.map)  # mAP50-95
 print(metrics.box.map50)  # mAP50

@@ -12,10 +12,35 @@ class Detection():
 
         Attributes:
         input_image (str): Path to the input image file.
+        classes (List[str]): Classes that can be detected by the model.
 
     """
-    def __init__(self, img_path: str):
+    def __init__(self, img_path: str, classes: List[str]):
         self.img_path = img_path
+        self.classes = classes
+
+    def crop_save(self, boxes: List[List], class_ids:List[float], wanted_classes: List[int], save_path: str) -> None:
+        """
+        Draw bounding boxes and labels on the input image based on the detected objects.
+    
+        Args:
+            boxes (List[float]): Detected bounding boxes coordinates [x1, y1, x2, y2].
+            class_ids (int): Class IDs for the detected object.
+            wanted_classes (List[int]): Classes that can be detected by the model.
+            save_path (str): The save directory path.
+        """
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+            
+        cv_image = cv2.imread(self.img_path)
+        img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
+
+        for i in range(len(boxes)):
+            if class_ids[i] in wanted_classes:
+                x1, y1, x2, y2 = boxes[i]
+                cropped_image = img[y1:y2, x1:x2]
+                output_name = os.path.basename(self.img_path).split('.')[0]
+                cv2.imwrite(f"{save_path}/{output_name}_{self.classes[int(class_ids[i])]}.jpg", cropped_image)
 
     def preprocess(self, new_size: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -83,17 +108,16 @@ class Detection():
                 # Add the class ID, score, and box coordinates to the respective lists
                 class_ids.append(class_id)
                 scores.append(classes_scores)
-                boxes.append([x1, y1, x2, y2 ])
+                boxes.append([int(x1), int(y1), int(x2), int(y2)])
 
         return boxes, scores, class_ids
         
 
-    def draw_detections(self, classes: List[str], boxes: List[list], scores: List[float], class_ids: List[int], view_img: bool=True, save: bool=False, save_path: str="") -> None:
+def draw_detections(self,boxes: List[list], scores: List[float], class_ids: List[int], view_img: bool=True, save: bool=False, save_path: str="") -> None:
         """
         Draw bounding boxes and labels on the input image based on the detected objects.
     
         Args:
-            classes (List[str]): Classes that can be detected by the model.
             boxes (List[float]): Detected bounding boxes coordinates [x, y, width, height].
             scores (float): Confidence scores of the detection.
             class_ids (int): Class IDs for the detected object.
@@ -109,9 +133,9 @@ class Detection():
             # Extract the coordinates of the bounding box
             x1, y1, x2, y2 = boxes[i]
            
-            if len(classes) > 1:
+            if len(self.classes) > 1:
                 # Retrieve the color for the class ID
-                color_palette = np.random.uniform(0, 255, size=(len(classes), 3))
+                color_palette = np.random.uniform(0, 255, size=(len(self.classes), 3))
                 color = color_palette[int(class_ids[i])]
             else:
                 color = (0, 0, 255)
@@ -120,7 +144,7 @@ class Detection():
             cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
         
             # Create the label text with class name and score
-            label = f"{classes[int(class_ids[i])]}: {scores[i]:.2f}"
+            label = f"{self.classes[int(class_ids[i])]}: {scores[i]:.2f}"
         
             # Calculate the dimensions of the label text
             (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
